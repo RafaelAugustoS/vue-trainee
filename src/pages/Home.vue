@@ -16,7 +16,7 @@
           <button @click="modal = true">Novo</button>
         </div>
       </div>
-
+      {{ getUser }}
       <table class="home__table">
         <thead>
           <tr>
@@ -53,6 +53,8 @@
       </table>
     </div>
 
+    <List :data="filterList" />
+
     <Modal v-if="modal" :close="() => (modal = false)" @update="getStudents" />
   </div>
 </template>
@@ -60,6 +62,8 @@
 <script>
 import axios from "axios";
 import Modal from "@/components/Modal";
+import List from "@/components/teste/List";
+import { mapGetters } from "vuex";
 export default {
   data: () => ({
     students: [],
@@ -67,11 +71,12 @@ export default {
     check: false,
     q: "",
   }),
-  components: { Modal },
+  components: { Modal, List },
   mounted() {
-    this.getStudents();
+    this.$store.dispatch("getStudents");
   },
   computed: {
+    ...mapGetters(["getUser", "getStudents"]),
     getCheck() {
       const arr = [];
       const students = this.students.filter((student) => student.check);
@@ -83,24 +88,12 @@ export default {
       return arr;
     },
     filterList() {
-      return this.students.filter((student) =>
+      return this.getStudents.filter((student) =>
         student.name.toLowerCase().match(RegExp(this.q.toLowerCase()))
       );
     },
   },
   methods: {
-    async getStudents() {
-      try {
-        const { data } = await axios.get("http://localhost:3000/students");
-
-        data.map((student) => {
-          student.check = false;
-        });
-        this.students = data;
-      } catch (e) {
-        console.log(e);
-      }
-    },
     deleteAll() {
       this.getCheck.map((id) => {
         this.deleteStudent(id);
